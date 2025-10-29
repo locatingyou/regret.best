@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>regret - Discord's Premier All-in-One Bot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="https://cdn.discordapp.com/avatars/1429404336747974687/994d5fbc1c278eb371fc5516ade3473a.png"
+        type="image/png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #0f0f0f;
+            --bg-card: #151515;
+            --text-primary: #ffffff;
+            --text-secondary: #9ca3af;
+            --accent-blue: #60a5fa;
+            --accent-purple: #a78bfa;
+            --accent-pink: #f472b6;
+            --border-color: #1f1f1f;
+            --accent-green: #34d399;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 20% 30%, rgba(96, 165, 250, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(167, 139, 250, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(244, 114, 182, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+            animation: backgroundShift 20s ease-in-out infinite;
+        }
+
+        @keyframes backgroundShift {
+
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+
+            50% {
+                transform: translateY(-20px) scale(1.05);
+            }
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(10, 10, 10, 0.7);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            background: rgba(10, 10, 10, 0.95);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 0 20px rgba(96, 165, 250, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .logo-icon:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 0 30px rgba(96, 165, 250, 0.6);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            box-shadow: 0 0 10px var(--accent-green);
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.offline {
+            background: #ef4444;
+            box-shadow: 0 0 10px #ef4444;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.6;
+                transform: scale(1.1);
+            }
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            position: relative;
+            padding: 0.5rem 0;
+        }
+
+        .nav-link:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 8rem 2rem 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background:
+                radial-gradient(circle at center, rgba(96, 165, 250, 0.1), transparent 25%),
+                radial-gradient(circle at 60% 40%, rgba(167, 139, 250, 0.15), transparent 30%);
+            animation: heroRotate 30s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes heroRotate {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 200px;
+            background: linear-gradient(to top, var(--bg-primary), transparent);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-text {
+            max-width: 800px;
+            margin-bottom: 4rem;
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 8vw, 5.5rem);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.03em;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple), var(--accent-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease infinite;
+            background-size: 200% auto;
+        }
+
+        @keyframes gradientShift {
+
+            0%,
+            100% {
+                background-position: 0% center;
+            }
+
+            50% {
+                background-position: 100% center;
+            }
+        }
+
+        .hero-description {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.8;
+            max-width: 600px;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+        }
+
+        .btn {
+            padding: 1rem 2.5rem;
+            border: none;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-family: inherit;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+            box-shadow: 0 10px 30px rgba(96, 165, 250, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(96, 165, 250, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .hero-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            animation: fadeInUp 0.8s ease-out 0.6s both;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-pink));
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(96, 165, 250, 0.3);
+            box-shadow: 0 20px 60px rgba(96, 165, 250, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .features {
+            padding: 8rem 2rem;
+            background: var(--bg-secondary);
+            position: relative;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .section-title {
+            font-size: 3rem;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 4rem;
+            background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 2.5rem;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-item::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(96, 165, 250, 0.05), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .feature-item:hover::after {
+            opacity: 1;
+        }
+
+        .feature-item:hover {
+            transform: translateY(-8px);
+            border-color: rgba(167, 139, 250, 0.3);
+            box-shadow: 0 20px 60px rgba(167, 139, 250, 0.15);
+        }
+
+        .feature-number {
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .feature-item h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-item p {
+            color: var(--text-secondary);
+        }
+
+        .stats {
+            padding: 8rem 2rem;
+            background: var(--bg-primary);
+            position: relative;
+        }
+
+        .stats::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 30% 50%, rgba(167, 139, 250, 0.08), transparent 40%),
+                radial-gradient(circle at 70% 50%, rgba(96, 165, 250, 0.08), transparent 40%);
+            pointer-events: none;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 3rem;
+            text-align: center;
+        }
+
+        .stat-item {
+            position: relative;
+            padding: 2rem;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(96, 165, 250, 0.3);
+        }
+
+        .stat-number {
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .guilds-section {
+            padding: 8rem 2rem;
+            background: var(--bg-secondary);
+        }
+
+        .guilds-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            max-height: 600px;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .guilds-grid::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .guilds-grid::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+        }
+
+        .guilds-grid::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 10px;
+        }
+
+        .guilds-grid::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+        }
+
+        .guild-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .guild-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(96, 165, 250, 0.3);
+            box-shadow: 0 10px 30px rgba(96, 165, 250, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .guild-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: var(--bg-secondary);
+            border: 2px solid rgba(96, 165, 250, 0.2);
+        }
+
+        .guild-info {
+            flex: 1;
+        }
+
+        .guild-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            font-size: 0.95rem;
+        }
+
+        .guild-members {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .cta {
+            padding: 10rem 2rem;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(96, 165, 250, 0.1), rgba(167, 139, 250, 0.1));
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(244, 114, 182, 0.1), transparent 50%);
+            animation: ctaRotate 20s linear infinite;
+        }
+
+        @keyframes ctaRotate {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .cta h2 {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-large {
+            padding: 1.25rem 3rem;
+            font-size: 1.1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer {
+            background: var(--bg-secondary);
+            padding: 3rem 2rem 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .footer-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent-blue);
+            transition: width 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .footer-links a:hover::after {
+            width: 100%;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+        }
+
+        .latency-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .nav-links {
+                gap: 1rem;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                gap: 2rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .status-indicator {
+                display: none;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .cta h2 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img id="botAvatar" class="logo-icon" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="regret">
+                <span id="botName" class="logo-text">regret</span>
+            </div>
+            <div class="nav-links">
+                <a href="/commands" class="nav-link">Commands</a>
+                <a href="#servers" class="nav-link">Servers</a>
+                <a href="#stats" class="nav-link">Stats</a>
+                <div class="status-indicator">
+                    <div id="statusDot" class="status-dot"></div>
+                    <span id="statusText">Online</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1 class="hero-title">
+                    regret is discord's premier
+                    <span class="gradient-text">all-in-one</span> app
+                </h1>
+                <p class="hero-description">
+                    Meet the leading bot for management and engagement. Built to elevate your community's experience,
+                    streamline server management, and provide you access to premium resources for every necessity.
+                </p>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary"
+                        onclick="window.open('https://discord.com/oauth2/authorize?client_id=1429404336747974687', '_blank')">Add
+                        to Discord</button>
+                    <button class="btn btn-secondary">View Documentation</button>
+                </div>
+                <div style="margin-top: 1.5rem;">
+                    <div class="latency-badge">
+                        <i class="fas fa-signal"></i>
+                        <span>Latency: <strong id="latencyValue">--</strong>ms</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-features">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-gem"></i></div>
+                    <h3>boost perks</h3>
+                    <p>Unlock exclusive features and premium commands</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-skull"></i></div>
+                    <h3>vanity rewards</h3>
+                    <p>Customize your server with unique vanity URLs</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-share-nodes"></i></div>
+                    <h3>social media</h3>
+                    <p>Connect and manage all your social platforms</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="commands">
+        <div class="container">
+            <h2 class="section-title">Powerful Features</h2>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-number">01</div>
+                    <h3>Moderation Tools</h3>
+                    <p>Advanced moderation commands to keep your server safe and organized</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-number">02</div>
+                    <h3>Music System</h3>
+                    <p>High-quality music playback with playlist support and filters</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-number">03</div>
+                    <h3>Utility Commands</h3>
+                    <p>Essential tools for server management and automation</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-number" id="commandCount">--</div>
+                    <h3>Total Commands</h3>
+                    <p>Comprehensive command library at your fingertips</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats" id="stats">
+        <div class="container">
+            <h2 class="section-title">Live Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number" id="serverCount">--</div>
+                    <div class="stat-label">Servers</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="userCount">--</div>
+                    <div class="stat-label">Users</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="channelCount">--</div>
+                    <div class="stat-label">Channels</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="uptimeValue">99.9%</div>
+                    <div class="stat-label">Uptime</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Guilds Section -->
+    <section class="guilds-section" id="servers">
+        <div class="container">
+            <h2 class="section-title">Active Servers</h2>
+            <div class="guilds-grid" id="guildsGrid">
+                <!-- Guilds will be dynamically loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <h2>Ready to elevate your Discord server?</h2>
+            <p>Join <strong id="ctaServerCount">thousands</strong> of communities using regret today</p>
+            <button class="btn btn-primary btn-large"
+                onclick="window.open('https://discord.com/oauth2/authorize?client_id=1429404336747974687', '_blank')">Get
+                Started Now</button>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <img id="footerAvatar" class="logo-icon" src="https://cdn.discordapp.com/embed/avatars/0.png"
+                        alt="regret">
+                    <span>regret</span>
+                </div>
+                <div class="footer-links">
+                    <a href="#privacy">Privacy</a>
+                    <a href="#terms">Terms</a>
+                    <a href="https://discord.gg/regret" target="_blank">Support</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 regret. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
+        const API_URL = `${protocol}/api`;
+
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            }
+            return num.toString();
+        }
+
+        async function fetchBotData() {
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+
+                if (data.error) {
+                    console.error('API Error:', data.error);
+                    return;
+                }
+
+                if (data.bot) {
+                    if (data.bot.avatar_url) {
+                        document.getElementById('botAvatar').src = data.bot.avatar_url;
+                        document.getElementById('footerAvatar').src = data.bot.avatar_url;
+                    }
+                    if (data.bot.name) {
+                        document.getElementById('botName').textContent = data.bot.name;
+                    }
+                }
+
+                const statusDot = document.getElementById('statusDot');
+                const statusText = document.getElementById('statusText');
+                if (data.status === 'online' && data.ready) {
+                    statusDot.classList.remove('offline');
+                    statusText.textContent = 'Online';
+                } else {
+                    statusDot.classList.add('offline');
+                    statusText.textContent = 'Offline';
+                }
+
+                if (data.stats) {
+                    document.getElementById('serverCount').textContent = formatNumber(data.stats.servers);
+                    document.getElementById('userCount').textContent = formatNumber(data.stats.users);
+                    document.getElementById('channelCount').textContent = formatNumber(data.stats.channels);
+                    document.getElementById('commandCount').textContent = data.stats.commands;
+                    document.getElementById('latencyValue').textContent = data.stats.latency;
+                    document.getElementById('uptimeValue').textContent = data.stats.uptime;
+                    document.getElementById('ctaServerCount').textContent = formatNumber(data.stats.servers);
+                }
+
+                if (data.guilds && data.guilds.list) {
+                    const guildsGrid = document.getElementById('guildsGrid');
+                    guildsGrid.innerHTML = '';
+
+                    data.guilds.list
+                        .sort((a, b) => b.member_count - a.member_count)
+                        .forEach(guild => {
+                            const guildCard = document.createElement('div');
+                            guildCard.className = 'guild-card';
+                            guildCard.innerHTML = `
+                                <img class="guild-icon" 
+                                     src="${guild.icon_url || 'https://cdn.discordapp.com/embed/avatars/0.png'}" 
+                                     alt="${guild.name}"
+                                     onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                                <div class="guild-info">
+                                    <div class="guild-name">${guild.name}</div>
+                                    <div class="guild-members">
+                                        <i class="fas fa-users"></i> ${formatNumber(guild.member_count)} members
+                                    </div>
+                                </div>
+                            `;
+                            guildsGrid.appendChild(guildCard);
+                        });
+                }
+
+            } catch (error) {
+                console.error('Error fetching bot data:', error);
+            }
+        }
+
+        fetchBotData();
+        setInterval(fetchBotData, 30000);
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        const navbar = document.querySelector('.navbar');
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.feature-card, .feature-item, .stat-item, .guild-card').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'all 0.6s ease-out';
+            observer.observe(el);
+        });
+    </script>
+</body>
+
+</html>
